@@ -1,4 +1,4 @@
-﻿# django-powerbi-web-app
+﻿# Django Power BI Web App
 
 This app uses Power BI REST API. For now, there is very limited features; however, I am going to develop new ones by the time. I am aiming to enhance my Back-End skills, therefore I do not spend time for Front-End in this project.
 You must have an account that has permissions to read data by REST API.
