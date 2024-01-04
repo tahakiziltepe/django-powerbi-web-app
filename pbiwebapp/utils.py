@@ -23,19 +23,15 @@ def func_update_capacities(access_token):
     print(response)
     response = response.json()
     response = response['value']
-    powerbi_setting_instance = PowerBI_Setting.objects.get(id=1)
+    powerbi_setting_instance = PowerBI_Setting.objects.first()
     for r in response:
-        row_for_id = Capacity.objects.filter(capacityId=r['id']).order_by("-insertedDate").first()
-        if row_for_id:
-            row_for_id.delete()
-        else:
-            pass
-        instance = Capacity(
-            powerbi_setting = powerbi_setting_instance,
-            capacityId = r['id'],
-            capacityName = r['displayName']
-        )
-        instance.save()
+        defaults = {
+            "powerbi_setting" : powerbi_setting_instance,
+            "capacityId" : r['id'],
+            "capacityName" : r['displayName'],
+            "insertedDate" : timezone.now
+        }
+        Capacity.objects.update_or_create(capacityId=r['id'],defaults=defaults)
 
 def func_update_workspaces(access_token):
     v_capacities = Capacity.objects.all()
@@ -49,17 +45,13 @@ def func_update_workspaces(access_token):
         response = response['value']
         capacity_instance = Capacity.objects.get(capacityId=v_capacityId)
         for r in response:
-            row_for_id = Workspace.objects.filter(workspaceId=r['id']) #.order_by("-insertedDate").first()
-            if row_for_id:
-                row_for_id.delete()
-            else:
-                pass
-            instance = Workspace(
-                capacityId=capacity_instance,
-                workspaceId = r['id'],
-                workspaceName = r['name']
-            )
-            instance.save()
+            defaults = {
+                    "capacityId" : capacity_instance,
+                    "workspaceId" : r['id'],
+                    "workspaceName" : r['name'],
+                    "insertedDate" : timezone.now
+                }
+            Workspace.objects.update_or_create(workspaceId=r['id'],defaults=defaults)
 
 
 def func_update_datasets(access_token):
@@ -74,14 +66,10 @@ def func_update_datasets(access_token):
         response = response['value']
         workspace_instance = Workspace.objects.get(workspaceId=v_workspaceId)
         for r in response:
-            row_for_id = Dataset.objects.filter(datasetId=r['id']).order_by("-insertedDate").first()
-            if row_for_id:
-                row_for_id.delete()
-            else:
-                pass
-            instance = Dataset(
-                workspaceId = workspace_instance,
-                datasetId = r['id'],
-                datasetName = r['name']
-            )
-            instance.save()
+            defaults = {
+                    "workspaceId" : workspace_instance,
+                    "datasetId" : r['id'],
+                    "datasetName" : r['name'],
+                    "insertedDate" : timezone.now
+                }
+            Dataset.objects.update_or_create(datasetId=r['id'],defaults=defaults)

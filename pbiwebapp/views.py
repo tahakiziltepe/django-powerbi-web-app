@@ -1,8 +1,12 @@
 from django.shortcuts import render, redirect
+from django.urls import reverse_lazy
 from django.views import generic
 from .models import *
 from .utils import *
+from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth.decorators import user_passes_test
 # Create your views here.
+
 
 def IndexView(request):
     capacities = Capacity.objects.annotate(workspace_count=Count('workspace'))
@@ -26,9 +30,20 @@ class WorkspaceView(generic.ListView):
         return annotated_queryset
 
 
+class DatasetView(generic.ListView):
+    model = Dataset
+    template_name = "pbiwebapp/datasets.html"
+    context_object_name = "datasets"
 
+    def get_queryset(self):
+        queryset = Dataset.objects.filter(insertedDate__lte=timezone.now()).order_by("-insertedDate")
+        return queryset
+
+
+
+@staff_member_required
 def update_capacities(request):
-    pbi_settings = PowerBI_Setting.objects.get(id=1)
+    pbi_settings = PowerBI_Setting.objects.first()
     print(f"1 -- Views -- PBI_SETTINGS ---{pbi_settings}")
     access_token = request_access_token(pbi_settings.app_id,
                                         pbi_settings.tenant_id,
@@ -39,13 +54,17 @@ def update_capacities(request):
     print(f"3 -- Views -- RUN FUNCTION ---")
     return redirect('pbiwebapp:index')
 
+
+@staff_member_required
 def delete_capacity_from_db(request,v_id):
     c = Capacity.objects.filter(id=v_id)
     c.delete()
     return redirect('pbiwebapp:index')
 
+
+@staff_member_required
 def update_workspaces(request):
-    pbi_settings = PowerBI_Setting.objects.get(id=1)
+    pbi_settings = PowerBI_Setting.objects.first()
     print(f"1 -- Views -- PBI_SETTINGS ---{pbi_settings}")
     access_token = request_access_token(pbi_settings.app_id,
                                         pbi_settings.tenant_id,
@@ -56,14 +75,17 @@ def update_workspaces(request):
     print(f"3 -- Views -- RUN FUNCTION ---")
     return redirect('pbiwebapp:index')
 
+
+@staff_member_required
 def delete_workspace_from_db(request,v_id):
     c = Workspace.objects.filter(id=v_id)
     c.delete()
     return redirect('pbiwebapp:index')
 
 
+@staff_member_required
 def update_datasets(request):
-    pbi_settings = PowerBI_Setting.objects.get(id=1)
+    pbi_settings = PowerBI_Setting.objects.first()
     print(f"1 -- Views -- PBI_SETTINGS ---{pbi_settings}")
     access_token = request_access_token(pbi_settings.app_id,
                                         pbi_settings.tenant_id,
@@ -75,11 +97,14 @@ def update_datasets(request):
     return redirect('pbiwebapp:index')
 
 
+
+@staff_member_required
 def delete_dataset_from_db(request,v_id):
     c = Dataset.objects.filter(id=v_id)
     c.delete()
     return redirect('pbiwebapp:index')
 
 
+@staff_member_required
 def workspaces(request):
     return render(request, 'pbiwebapp/workspaces.html')
